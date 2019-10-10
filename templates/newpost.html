@@ -18,16 +18,19 @@
             <table>
                 <tr>
                     <td><label>Title for your new blog:</td></label>
+                </tr>
+                <tr>
                     <td>
-                        <input type="text" name='blog_title'>
+                        <input type="text" name='title'>
                         <span class="error">{{title_error}}</span>
                     </td>
                 </tr>
-                <tr></tr>
                 <tr>
                     <td><label>Your Blog Entry:</td></label>
+                </tr>
+                <tr>
                     <td>
-                        <input type="text" name='blog_entry'>
+                        <textarea type="text" name='body' rows="10" cols ="30"></textarea>
                         <span class="error">{{body_error}}</span>
                     </td>
                 </tr>

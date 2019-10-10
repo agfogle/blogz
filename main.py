@@ -26,50 +26,51 @@ class Blog(db.Model):
         self.title = title
         self.body = body
 
-blogs = [
-    {
-        'title': 'Blog Post #1',
-        'body': 'This is my first blog'
-    },
-    {
-        'title': 'Blog Post #2',
-        'body': 'This is my second blog'
-    }
-]
+# Dummy data to test visual functionality
+# blogs = [
+#     {
+#         'title': 'Blog Post #1',
+#         'body': 'This is my first blog'
+#     },
+#     {
+#         'title': 'Blog Post #2',
+#         'body': 'This is my second blog'
+#     }
+# ]
 
 @app.route('/blog')
 def index():
-    # blogs = Blog.query.all()
+    blogs = Blog.query.all()
     return render_template('blog.html', blogs=blogs)
 
-@app.route('/newpost')
-def new_post_display():
-    return render_template('newpost.html')
 
-
-@app.route('/newpost', methods=['POST'])
+@app.route('/newpost', methods=['GET','POST'])
 def new_post():
-    title = request.form['blog_title']
-    body = request.form['blog_entry']
+    if request.method == 'GET':
+        return render_template('newpost.html')
 
-    new_blog = Blog(title,body)
-    # db.session.add(new_blog)
-    # db.session.commit()
-    
-    # return render_template('/blog.html')
+    if request.method == 'POST':
+        blog_title = request.form['title']
+        blog_body = request.form['body']
+        new_blog = Blog(blog_title,blog_body)
+        db.session.add(new_blog)
+        db.session.commit()
 
-    title_error = ''
-    body_error = ''
+        return redirect('/blog')
 
-    if title == "":
-        title_error = "This field can not be blank"
-    elif body == "":
-        body_error = "This field can not be blank"
 
-    if not title_error and not body_error:
-        render_template('blog.html')  
-    else:
-        return render_template('newpost.html', title=title, title_error=title_error, body=body, body_error=body_error)
+        # title_error = ''
+        # body_error = ''
+
+        # if blog_title == "":
+        #     title_error = "This field can not be blank"
+        # elif blog_body == "":
+        #     body_error = "This field can not be blank"
+
+        # if not title_error and not body_error:
+        #     render_template('blog.html')  
+        # else:
+        #     return render_template('newpost.html', blog_title=blog_title, title_error=title_error, blog_body=blog_body, body_error=body_error)
     
 
 

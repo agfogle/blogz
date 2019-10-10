@@ -26,21 +26,11 @@ class Blog(db.Model):
         self.title = title
         self.body = body
 
-# Dummy data to test visual functionality
-# blogs = [
-#     {
-#         'title': 'Blog Post #1',
-#         'body': 'This is my first blog'
-#     },
-#     {
-#         'title': 'Blog Post #2',
-#         'body': 'This is my second blog'
-#     }
-# ]
 
 @app.route('/blog')
 def index():
     blogs = Blog.query.all()
+    # blog_id = 
     return render_template('blog.html', blogs=blogs)
 
 
@@ -53,27 +43,22 @@ def new_post():
         blog_title = request.form['title']
         blog_body = request.form['body']
         new_blog = Blog(blog_title,blog_body)
-        db.session.add(new_blog)
-        db.session.commit()
 
-        return redirect('/blog')
+        title_error = ''
+        body_error = ''
 
+        if blog_title == "":
+            title_error = "This field can not be blank"
+        elif blog_body == "":
+            body_error = "This field can not be blank"
 
-        # title_error = ''
-        # body_error = ''
-
-        # if blog_title == "":
-        #     title_error = "This field can not be blank"
-        # elif blog_body == "":
-        #     body_error = "This field can not be blank"
-
-        # if not title_error and not body_error:
-        #     render_template('blog.html')  
-        # else:
-        #     return render_template('newpost.html', blog_title=blog_title, title_error=title_error, blog_body=blog_body, body_error=body_error)
+        if not title_error and not body_error:
+            db.session.add(new_blog)
+            db.session.commit()
+            return redirect('/blog') 
+        else:
+            return render_template('newpost.html', blog_title=blog_title, title_error=title_error, blog_body=blog_body, body_error=body_error)
     
-
-
 
 if __name__ =='__main__':
     app.run()

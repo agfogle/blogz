@@ -66,7 +66,9 @@ def new_post():
         else:
             return render_template('newpost.html', blog_title=blog_title, title_error=title_error, blog_body=blog_body, body_error=body_error)
 
-
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
 if __name__ =='__main__':
     app.run()

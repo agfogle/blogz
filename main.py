@@ -1,11 +1,12 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, session
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:myblogz@localhost:8889/blogz'
 app.config['SQLALCHEMY_ECHO'] = True
-db = SQLAlchemy(app) 
+db = SQLAlchemy(app)
+app.secret_key="lmnop%$#@!" 
 
 class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True) 
@@ -27,6 +28,13 @@ class User(db.Model):
     def __init__(self, username, password):
         self.username = username
         self.password = password
+
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'signup']
+
+    if request.endpoint not in allowed_routes and 'username' not in session:
+        return redirect('/login')
 
 
 @app.route('/blog')
@@ -81,7 +89,7 @@ def login():
         
 
         if user and User.password == password:
-            #Keep username in session
+            session['username'] = username
             return redirect('/newpost')
 
         elif user == username and password != User.password:
@@ -92,10 +100,58 @@ def login():
         
         return render_template('login.html', username=username, username_error=username_error, password_error=password_error)
 
-@app.route('/signup')
+@app.route('/signup', methods=['GET','POST'])
 def signup():
-    return render_template('signup.html')
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
+        existing_user = User.query.filter_by(username=username).first()
 
+        verify_error = ''
+        password_error =''
+        username_error = ''
+        
+
+        if " " in username:
+            username_error = "username can not include spaces"
+            return render_template('signup.html', username_error=username_error)
+        elif len(username) < 3:
+            username_error = "Must be greater than 3 characters"
+            return render_template('signup.html', username_error=username_error)
+
+
+        if " " in password:
+            password_error = "Password can not include spaces"
+            return render_template('signup.html', password_error=password_error)
+        elif len(password) < 3:
+            password_error = "Must be greater than 3 characters"  
+            return render_template('signup.html', password_error=password_error)  
+           
+
+        if not verify == password:
+            verify_error = "Passwords must match"
+            return render_template('signup.html', verify_error=verify_error)
+        
+        if not existing_user:
+            new_user = User(username, password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['username'] = username
+            return redirect('/newpost')
+        else:
+            username_error = "Username already exists"
+            return render_template('signup.html', username=username, username_error=username_error)
     
+    else:
+        return render_template('signup.html')
+
+
+@app.route('/logout')
+def logout():
+    del session['username']
+    return redirect('/blog')
+
+
 if __name__ =='__main__':
     app.run()

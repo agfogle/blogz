@@ -63,12 +63,39 @@ def new_post():
             db.session.commit()
             return redirect('/blog?id={}'.format(new_blog.id))
             
-        else:
-            return render_template('newpost.html', blog_title=blog_title, title_error=title_error, blog_body=blog_body, body_error=body_error)
+        
+        return render_template('newpost.html', blog_title=blog_title, title_error=title_error, blog_body=blog_body, body_error=body_error)
 
-@app.route('/login')
+@app.route('/login', methods=['GET','POST'])
 def login():
-    return render_template('login.html')
+    if request.method == 'GET':
+        return render_template('login.html')
 
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username)
+
+        username_error = ''
+        password_error = ''
+        
+
+        if user and User.password == password:
+            #Keep username in session
+            return redirect('/newpost')
+
+        elif user == username and password != User.password:
+            password_error="Password is incorrect"
+
+        elif username not in user:
+            username_error = "Username does not exist"
+        
+        return render_template('login.html', username=username, username_error=username_error, password_error=password_error)
+
+@app.route('/signup')
+def signup():
+    return render_template('signup.html')
+
+    
 if __name__ =='__main__':
     app.run()

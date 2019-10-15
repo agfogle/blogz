@@ -31,7 +31,7 @@ class User(db.Model):
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'signup']
+    allowed_routes = ['login', 'signup', 'blog', 'index']
 
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
@@ -47,32 +47,6 @@ def blogs():
     else:
         blogs = Blog.query.all()
         return render_template('blog.html', blogs=blogs)
-
-@app.route('/newpost', methods=['GET','POST'])
-def new_post():
-    if request.method == 'GET':
-        return render_template('newpost.html')
-
-    if request.method == 'POST':
-        blog_title = request.form['title']
-        blog_body = request.form['body']
-        new_blog = Blog(blog_title,blog_body)
-
-        title_error = ''
-        body_error = ''
-
-        if blog_title == "":
-            title_error = "This field can not be blank"
-        elif blog_body == "":
-            body_error = "This field can not be blank"
-
-        if not title_error and not body_error:
-            db.session.add(new_blog)
-            db.session.commit()
-            return redirect('/blog?id={}'.format(new_blog.id))
-            
-        
-        return render_template('newpost.html', blog_title=blog_title, title_error=title_error, blog_body=blog_body, body_error=body_error)
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -99,6 +73,34 @@ def login():
             username_error = "Username does not exist"
         
         return render_template('login.html', username=username, username_error=username_error, password_error=password_error)
+
+@app.route('/newpost', methods=['GET','POST'])
+def new_post():
+    if request.method == 'GET':
+        return render_template('newpost.html')
+
+    if request.method == 'POST':
+        blog_title = request.form['title']
+        blog_body = request.form['body']
+        blog_owner = User.query.filter_by(session=username)
+        new_blog = Blog(blog_title,blog_body,blog_owner)
+
+        title_error = ''
+        body_error = ''
+
+        if blog_title == "":
+            title_error = "This field can not be blank"
+        elif blog_body == "":
+            body_error = "This field can not be blank"
+
+        if not title_error and not body_error:
+            db.session.add(new_blog)
+            db.session.commit()
+            return redirect('/blog?id={}'.format(new_blog.id))
+            
+        
+        return render_template('newpost.html', blog_title=blog_title, title_error=title_error, blog_body=blog_body, body_error=body_error)
+
 
 @app.route('/signup', methods=['GET','POST'])
 def signup():
@@ -146,6 +148,10 @@ def signup():
     else:
         return render_template('signup.html')
 
+@app.route('/', methods=['POST', 'GET'])
+def index():
+    blog_owners = User.query.all()
+    return render_template('index.html', User=blog_owners)
 
 @app.route('/logout')
 def logout():

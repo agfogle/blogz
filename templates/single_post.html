@@ -4,8 +4,9 @@
 {% block content %}
 
 <body>
-    <h1>{{blog.title}}</h1>
-    <p>{{blog.body}}</p>
+    <h1>{{single_post.title}}</h1>
+    <p>{{single_post.body}}</p>
+    <p><h6>Written By:<a href="/blog?user={{single_post.owner_id}}">{{single_post.owner.username}}</h6></a></p>
 
 </body>
 {% endblock %} 
